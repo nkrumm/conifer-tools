@@ -9,13 +9,5 @@ setup(name='conifertools',
       author_email='nkrumm@gmail.com',
       license='',
       packages=['conifertools'],
-      install_requires=[
-          'numpy',
-          'tables',
-          'pandas',
-          'rpy2',
-          'scipy',
-          'drmaa',
-          'matplotlib'
-      ],
+      install_requires=[],
       zip_safe=False)
