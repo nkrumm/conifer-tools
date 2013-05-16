@@ -34,3 +34,5 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+conifer-tools.sublime-project
+conifer-tools.sublime-workspace
