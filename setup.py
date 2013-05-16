@@ -14,6 +14,7 @@ setup(name='conifer-tools/',
           'pandas',
           'rpy2',
           'scipy',
-          'drmaa'
+          'drmaa',
+          'matplotlib'
       ],
       zip_safe=False)
