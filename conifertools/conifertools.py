@@ -175,6 +175,7 @@ class CallTable(object):
         
         self.calls.to_csv(f,**kwargs)
 
+
 class CallFilterTemplate():
     KNOWN_TYPES = ["overlap", "count", "contains", "name"]
 
@@ -249,8 +250,8 @@ class CallFilterTemplate():
         return self._count(row) > 0
 
     def _name(self, row):
-        return self._filter[self._get_filter_rows(row)
-                            & (map(lambda x: x is not None, self._filter["name"]))]["name"].values
+        return [x[0] for x in np.unique(self._filter[self._get_filter_rows(row)
+                            & (map(lambda x: x is not None, self._filter["name"]))]["name"])]
 
     def _genColumnName(self, name, tbl):
         if name not in tbl:
