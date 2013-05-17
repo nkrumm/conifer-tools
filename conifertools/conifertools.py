@@ -176,8 +176,18 @@ class CallTable(object):
         self.calls.to_csv(f,**kwargs)
 
 class CallFilterTemplate():
-    def __init__(self, p, file, name, type=None, func = None, coerce_chrXY_to_int=True):
+    KNOWN_TYPES = ["overlap", "count", "contains", "name"]
+
+    def __init__(self, p, filename, name, filter_type=None, func = None, coerce_chrXY_to_int=True):
         """Create a new CallFilter from a bed file and exon list"""
+        if filter_type in self.KNOWN_TYPES:
+            self.type = filter_type
+            self.func = func
+            self.name = name
+        else:
+            print "filter type %s not yet implemented" % filter_type
+            return None
+
         try:
             bedfile = pandas.read_csv(file,sep="\t",index_col=False,names=["chr","start","stop"])
         except:
@@ -209,24 +219,9 @@ class CallFilterTemplate():
             # from bed_array falls between one of the probes, in that case the searchsorted result will not be the same.    
             probe_array["feature"] = np.searchsorted(np.sort(bed_array["start"].values), probe_array["stop"].values) != np.searchsorted(np.sort(bed_array["stop"].values), probe_array["start"].values)
             self._filter = self._filter.append(probe_array,ignore_index=True)
-        
-        if type == "overlap":
-            self.type="overlap"
-            self.func = func
-            self.name = name
-        elif type=="count":
-            self.type="count"
-            self.func = func
-            self.name = name
-        elif type=="contains":
-            self.type="contains"
-            self.func = func
-            self.name = name
-        else:
-            print "filter type %s not yet implemented" % type
-            return None
-        
-    
+
+
+
     def _count(self, row):
         return np.sum((self._filter["feature"] == True) & (self._filter["chr"].values == row["chromosome"]) & (self._filter["start"].values<=row["stop"]) & (self._filter["stop"].values >= row["start"]))
     

@@ -12,29 +12,29 @@ if __name__ == "__main__":
     SDFilter = CallFilterTemplate(p,
                 "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/hg19genomicSuperDups.bed",
                 name="SegDupProbeOverlap",
-                type="overlap",
+                filter_type="overlap",
                 func=lambda x: x < 0.5)
 
     SDCount = CallFilterTemplate(p,
                 "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/hg19genomicSuperDups.bed",
                 name="SegDupProbeCount",
-                type="count")
+                filter_type="count")
 
     PPGFilter = CallFilterTemplate(p,
                 "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/pp_genes.hg19.spans.bed",
                 name="PPG_overlap",
-                type="overlap",
+                filter_type="overlap",
                 func=lambda x: x < 0.1)
 
     PPG_probe_count = CallFilterTemplate(p,
                       "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/pp_genes.hg19.spans.bed",
                       name="PPG_exoncount",
-                      type="count")
+                      filter_type="count")
 
     OtherDupFilter = CallFilterTemplate(p,
                      "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/3copiesin27of34.bed",
                      name="Dup_overlap",
-                     type="overlap",
+                     filter_type="overlap",
                      func=lambda x: x < 0.5)
 
     def signalFilter(x):
