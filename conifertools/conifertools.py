@@ -230,10 +230,9 @@ class CallFilterTemplate():
                 probe_array["name"] = None
                 for ix, p in probe_array[probe_array.feature].iterrows():
                     f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
-                    probe_array["name"].ix[ix] = list(set(bed_array[f]["name"].values))
+                    probe_array["name"].ix[ix] = bed_array[f]["name"].values
 
-            self._filter = self._filter.append(probe_array,ignore_index=True)
-
+            self._filter = self._filter.append(probe_array, ignore_index=True)
 
     def _get_filter_rows(self, row):
         return (self._filter["chr"].values == row["chromosome"]) &\
