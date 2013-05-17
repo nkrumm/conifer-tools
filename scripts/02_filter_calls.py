@@ -24,7 +24,7 @@ if __name__ == "__main__":
                 "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/pp_genes.hg19.spans.bed",
                 name="PPG_overlap",
                 filter_type="overlap",
-                func=lambda x: x < 0.1)
+                func=lambda x: x < 0.9)
 
     PPG_probe_count = CallFilterTemplate(p,
                       "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/pp_genes.hg19.spans.bed",
