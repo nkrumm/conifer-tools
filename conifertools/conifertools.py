@@ -261,7 +261,7 @@ class CallFilterTemplate():
                 i += 1
             return "%s_%d" % (name, i)
 
-    def __call__(self, in_table, filter_on=True):
+    def __call__(self, in_table, filter_on=True):
         if self.type=="overlap":
             if filter_on and (self.func is not None):
                 ffunc = lambda x: self.func(self._frac(self._count(x[1]),x[1]))
