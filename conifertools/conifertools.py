@@ -250,7 +250,7 @@ class CallFilterTemplate():
         return self._count(row) > 0
 
     def _name(self, row):
-        return self._filter[_get_filter_rows(row) & (self._filter["name"] is not None)]["name"]
+        return self._filter[self._get_filter_rows(row) & (self._filter["name"] is not None)]["name"]
 
     def _genColumnName(self,name, tbl):
         if name not in tbl:
