@@ -51,18 +51,18 @@ do
     python 03_cluster_calls.py --infile=$INFILE --outfile=$OUTFILE
 
     echo "QC plot for chromosome $CHR"
-    python QC01_QCplot.py --infile="$OUTFILE" --outfile="${QCDIR}/${PREFIX}.chr${CHR}.filtered_calls.png" --title="QC Plot: Chr${CHR} (filtered calls)" 
+    python plotting/QC01_QCplot.py --infile="$OUTFILE" --outfile="${QCDIR}/${PREFIX}.chr${CHR}.filtered_calls.png" --title="QC Plot: Chr${CHR} (filtered calls)" 
 
     echo "Plotting all calls for chromosome $CHR"
     mkdir -p $PLOTDIR/$CHR
-    python QC02_plot_cnvrs.py --conifer_file=$CONIFER_ANALYSIS_FILE --min_freq 2 --max_freq 30 --call_file=$OUTFILE --out_dir=$PLOTDIR/$CHR/
+    python plotting/QC02_plot_cnvrs.py --conifer_file=$CONIFER_ANALYSIS_FILE --min_freq 2 --max_freq 30 --call_file=$OUTFILE --out_dir=$PLOTDIR/$CHR/
 done
 
 echo "QC Plot of # of calls per sample"
-python QC03_sample_plot.py --infile ${OUTDIR}/${PREFIX}.chr*.calls.clustered.csv --outfile ${QCDIR}/QC.SamplePlot.png --outfile_list ${QCDIR}/call_counts_per_sample.csv --n_samples=$N_SAMPLES
+python plotting/QC03_sample_plot.py --infile ${OUTDIR}/${PREFIX}.chr*.calls.clustered.csv --outfile ${QCDIR}/QC.SamplePlot.png --outfile_list ${QCDIR}/call_counts_per_sample.csv --n_samples=$N_SAMPLES
 
 echo "QC Plot of all calls"
-python QC01_QCplot.py --infile ${OUTDIR}/${PREFIX}.chr*.calls.clustered.csv --outfile="${QCDIR}/${PREFIX}.all_chrs.filtered_calls.png" --title="QC Plot: All Chromosomes (filtered calls)"   
+python plotting/QC01_QCplot.py --infile ${OUTDIR}/${PREFIX}.chr*.calls.clustered.csv --outfile="${QCDIR}/${PREFIX}.all_chrs.filtered_calls.png" --title="QC Plot: All Chromosomes (filtered calls)"   
 
 echo "Final combined call file for all chromosomes"
 COLS='sampleID chromosome start stop state start_exon stop_exon num_probes size_bp median_svdzrpkm cnvrID cnvr_frequency'
