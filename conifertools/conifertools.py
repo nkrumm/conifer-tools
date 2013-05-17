@@ -351,10 +351,6 @@ class ConiferPipeline:
         return pandas.DataFrame(self.r.h5file.root.probes._f_getChild("probes_chr%d" % chrom).read())
 
     def getConiferData(self, sample, chrom):
-        #import gzip
-        #
-        #fn = "/net/eichler/vol8/home/nkrumm/EXOMES/Quad_Analysis/calling/UW_v2/chr%(chrom)d/%(sample)s.chr%(chrom)d.svdzrpkm.txt.gz" % {"sample":sample,"chrom":chrom}
-        #d = pandas.read_csv(fn,compression="gzip",names=["CHROMOSOME","START","STOP","svdzrpkm"],sep="\t")
         return self.r.getChromosomeBySample(sample,chrom)
     
     def preprocess(self, data, min_val=-3,max_val=3):
@@ -536,13 +532,5 @@ class ConiferPipeline:
 
 
 if __name__ == "__main__":
-    p = ConiferPipeline("/net/eichler/vol8/home/nkrumm/EXOMES/Autism_Main/SVD15_199.10bpminprobe.h5")
-    import time 
+    pass
     
-    t1 = time.time()
-    
-    calls = p.makeCallsMPI(chromosomes=None, samples=None,n_cpus=351,n_retry=3)
-    
-    print "Done in ", time.time()-t1, "seconds"
-    print calls.calls.head(100)
-    calls.save("/net/eichler/vol8/home/nkrumm/EXOMES/CoNIFER/conifer_v0.3_DEV/calls_fulltest.alpha002undoSD.retry.txt")
