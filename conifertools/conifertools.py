@@ -223,7 +223,15 @@ class CallFilterTemplate():
             # this line returns if the intervals of the probe_array are contained or overlapping the bed_array.
             # It works by using the trick that the searchsorted function will return differing indices if a start or stop
             # from bed_array falls between one of the probes, in that case the searchsorted result will not be the same.    
-            probe_array["feature"] = np.searchsorted(np.sort(bed_array["start"].values), probe_array["stop"].values) != np.searchsorted(np.sort(bed_array["stop"].values), probe_array["start"].values)
+            probe_array["feature"] = np.searchsorted(np.sort(bed_array["start"].values), probe_array["stop"].values)\
+                                     != np.searchsorted(np.sort(bed_array["stop"].values), probe_array["start"].values)
+
+            if "name" in bed_array:
+                probe_array["name"] = None
+                for ix, p in probe_array[probe_array.feature].iterrows():
+                    f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
+                    probe_array["name"].ix[ix] = set(bed_array[f]["name"].values)
+            
             self._filter = self._filter.append(probe_array,ignore_index=True)
 
 
@@ -238,8 +246,11 @@ class CallFilterTemplate():
         return float(count)/row["num_probes"]
 
     def _contains(self, row):
-        return self._count(row) > 0 
-    
+        return self._count(row) > 0
+
+    def _name(self, row):
+        return True
+
     def _genColumnName(self,name, tbl):
         if name not in tbl:
             return name
@@ -269,6 +280,13 @@ class CallFilterTemplate():
                 return CallTable(in_table.calls.ix[map(ffunc, in_table.calls.iterrows())])
             else:
                 in_table.calls[self._genColumnName(self.name,in_table.calls)] = map(lambda x: self._contains(x[1]), in_table.calls.iterrows())
+                return in_table
+        if self.type == "name":
+            ffunc = lambda x: self.func(self._name(x[1]))
+            if filter_on and (self.func is not None):                
+                return CallTable(in_table.calls.ix[map(ffunc, in_table.calls.iterrows())])
+            else:
+                in_table.calls[self._genColumnName(self.name,in_table.calls)] = map(ffunc, in_table.calls.iterrows())
                 return in_table
         else:
             print "filter type %s not yet implemented" % self.type

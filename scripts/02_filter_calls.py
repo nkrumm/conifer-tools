@@ -37,6 +37,11 @@ if __name__ == "__main__":
                      filter_type="overlap",
                      func=lambda x: x < 0.5)
 
+    GeneAnnotation = CallFilterTemplate(p,
+                     "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/refseq.hg19.bed",
+                     name="RefSeq",
+                     filter_type="name")
+
     def signalFilter(x):
         if x["num_probes"] <= 2:
             return np.abs(x["median_svdzrpkm"]) >= 1.5
