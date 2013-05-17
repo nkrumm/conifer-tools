@@ -223,11 +223,14 @@ class CallFilterTemplate():
 
 
     def _count(self, row):
-        return np.sum((self._filter["feature"] == True) & (self._filter["chr"].values == row["chromosome"]) & (self._filter["start"].values<=row["stop"]) & (self._filter["stop"].values >= row["start"]))
-    
-    def _frac(self,count, row):
+        return np.sum((self._filter["feature"] == True) &
+                      (self._filter["chr"].values == row["chromosome"]) &
+                      (self._filter["start"].values <= row["stop"]) &
+                      (self._filter["stop"].values >= row["start"]))
+
+    def _frac(self, count, row):
         return float(count)/row["num_probes"]
-    
+
     def _contains(self, row):
         return self._count(row) > 0 
     
