@@ -250,10 +250,10 @@ class CallFilterTemplate():
         return self._count(row) > 0
 
     def _name(self, row):
-        return self._filter[self._get_filter_rows(row) & (
-                            map(lambda x: x is not None, self._filter["name"]))]["name"].values
+        return self._filter[self._get_filter_rows(row)
+                            & (map(lambda x: x is not None, self._filter["name"]))]["name"].values
 
-    def _genColumnName(self,name, tbl):
+    def _genColumnName(self, name, tbl):
         if name not in tbl:
             return name
         else:
@@ -261,8 +261,8 @@ class CallFilterTemplate():
             while "%s_%d" % (name, i) in tbl:
                 i += 1
             return "%s_%d" % (name, i)
-    
-    def __call__(self,in_table,filter_on=True):
+
+    def __call__(self, in_table, filter_on=True):
         if self.type=="overlap":
             if filter_on and (self.func is not None):
                 ffunc = lambda x: self.func(self._frac(self._count(x[1]),x[1]))
