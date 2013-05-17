@@ -189,14 +189,20 @@ class CallFilterTemplate():
             return None
 
         try:
-            bedfile = pandas.read_csv(file,sep="\t",index_col=False,names=["chr","start","stop"])
+            bedfile = pandas.read_csv(filename,sep="\t",index_col=False,header=None)
+            if len(bedfile.columns) == 3:
+                bedfile.columns = ["chr","start","stop"]
+            elif len(bedfile.columns) == 4:
+                bedfile.columns = ["chr","start","stop","name"]
+            else:
+                raise
         except:
-            print "Exception: Could not read bed file or load previously save filter from", file
+            print "Exception: Could not read bed file or file has wrong number of columns: ", filename
 
         bedfile = bedfile.sort(["chr","start","stop"])
         bedfile_chrs = set(bedfile["chr"].values)
         self._filter = pandas.DataFrame()
-        
+
         for probe_tbl in p.r.h5file.root.probes:
             probe_array = pandas.DataFrame(probe_tbl.read()[["start","stop"]])
             probe_array_chr = int(probe_tbl.title.replace("chr",""))
