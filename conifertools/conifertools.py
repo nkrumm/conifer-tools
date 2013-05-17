@@ -457,17 +457,17 @@ class ConiferPipeline:
         
         return c
     
-    def makeCalls(self,chromosomes=None,samples=None,verbose=False):
+    def makeCalls(self, chromosomes=None, samples=None, verbose=False):
         if chromosomes == None:
             chromosomes = self.contigs
         if not self.is_sequence(chromosomes):
             chromosomes = [chromosomes]
-        
+
         if samples == None:
             samples = self.samples
         if not self.is_sequence(samples):
             samples = [samples]
-        
+
         calls = CallTable()
         for s in samples:
             sample_calls = CallTable()
@@ -487,11 +487,10 @@ class ConiferPipeline:
             if len(sample_calls.calls) > 0:
                 calls.appendCalls(sample_calls)
                 if self.log_level >=1:
-                    print "\n", # newline needed
+                    print "\n",  # newline needed
         return calls
-    
-    
-    def makeCallsMPI(self, outfile=None, chromosomes=None,samples=None,n_cpus=10, verbose=False,n_retry=0):
+
+    def makeCallsMPI(self, outfile=None, chromosomes=None,samples=None,n_cpus=10, verbose=False, n_retry=0):
         import mpi_submit as mpi
         import tempfile 
         if outfile == None:
@@ -533,4 +532,3 @@ class ConiferPipeline:
 
 if __name__ == "__main__":
     pass
-    
