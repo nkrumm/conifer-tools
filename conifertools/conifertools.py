@@ -226,7 +226,7 @@ class CallFilterTemplate():
             probe_array["feature"] = np.searchsorted(np.sort(bed_array["start"].values), probe_array["stop"].values)\
                                      != np.searchsorted(np.sort(bed_array["stop"].values), probe_array["start"].values)
 
-            if "name" in bed_array:
+            if filter_type == "name":
                 probe_array["name"] = None
                 for ix, p in probe_array[probe_array.feature].iterrows():
                     f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
@@ -235,12 +235,13 @@ class CallFilterTemplate():
             self._filter = self._filter.append(probe_array,ignore_index=True)
 
 
+    def _get_filter_rows(self, row):
+        return (self._filter["chr"].values == row["chromosome"]) &\
+               (self._filter["start"].values <= row["stop"]) &\
+               (self._filter["stop"].values >= row["start"])
 
     def _count(self, row):
-        return np.sum((self._filter["feature"] == True) &
-                      (self._filter["chr"].values == row["chromosome"]) &
-                      (self._filter["start"].values <= row["stop"]) &
-                      (self._filter["stop"].values >= row["start"]))
+        return np.sum(self._get_filter_rows(row) & (self._filter["feature"] == True))
 
     def _frac(self, count, row):
         return float(count)/row["num_probes"]
@@ -249,7 +250,7 @@ class CallFilterTemplate():
         return self._count(row) > 0
 
     def _name(self, row):
-        return True
+        return self._filter[_get_filter_rows(row) & (self._filter["name"] is not None)]["name"]
 
     def _genColumnName(self,name, tbl):
         if name not in tbl:
