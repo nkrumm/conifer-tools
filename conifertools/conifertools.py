@@ -231,7 +231,7 @@ class CallFilterTemplate():
                 for ix, p in probe_array[probe_array.feature].iterrows():
                     f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
                     probe_array["name"].ix[ix] = set(bed_array[f]["name"].values)
-            
+
             self._filter = self._filter.append(probe_array,ignore_index=True)
 
 
@@ -283,11 +283,11 @@ class CallFilterTemplate():
                 in_table.calls[self._genColumnName(self.name,in_table.calls)] = map(lambda x: self._contains(x[1]), in_table.calls.iterrows())
                 return in_table
         if self.type == "name":
-            ffunc = lambda x: self.func(self._name(x[1]))
-            if filter_on and (self.func is not None):                
+            if filter_on and (self.func is not None):
+                ffunc = lambda x: self.func(self._name(x[1]))
                 return CallTable(in_table.calls.ix[map(ffunc, in_table.calls.iterrows())])
             else:
-                in_table.calls[self._genColumnName(self.name,in_table.calls)] = map(ffunc, in_table.calls.iterrows())
+                in_table.calls[self._genColumnName(self.name,in_table.calls)] = map(lambda x: self._name(x[1]), in_table.calls.iterrows())
                 return in_table
         else:
             print "filter type %s not yet implemented" % self.type
