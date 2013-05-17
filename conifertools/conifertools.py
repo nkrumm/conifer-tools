@@ -230,7 +230,7 @@ class CallFilterTemplate():
                 probe_array["name"] = None
                 for ix, p in probe_array[probe_array.feature].iterrows():
                     f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
-                    probe_array["name"].ix[ix] = set(bed_array[f]["name"].values)
+                    probe_array["name"].ix[ix] = list(set(bed_array[f]["name"].values))
 
             self._filter = self._filter.append(probe_array,ignore_index=True)
 
@@ -250,7 +250,7 @@ class CallFilterTemplate():
         return self._count(row) > 0
 
     def _name(self, row):
-        return self._filter[self._get_filter_rows(row) & (self._filter["name"] is not None)]["name"]
+        return self._filter[self._get_filter_rows(row) & (self._filter["name"] is not None)]["name"].values
 
     def _genColumnName(self,name, tbl):
         if name not in tbl:
