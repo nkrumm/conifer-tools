@@ -151,6 +151,25 @@ class CallTable(object):
             print "Annotater is not of supported type (lambda or CallFilterTemplate)"
             return 0
     
+    def genotype(self, conifer_pipeline, samples=None, func=np.median):
+        """
+        Create a 'squared-off' genotype CallTable, given a list of `samples`
+        and a `func`tion to calculate genotype values.
+        """
+        if samples is None:
+            samples = set(conifer_pipeline.samples)
+        else:
+            samples = set(samples)
+        gt_matrix = np.zeros([len(self.calls),len(samples)])
+        ix = 0
+        for _, call in self.calls.iterrows():
+            d = conifer_pipeline.r.getExonValuesByRegion(chromosome=call["chromosome"],start=call["start"],stop=call["stop"],sampleList=samples,genotype=False,overlap=True).rpkm
+            gt_matrix[ix,:] = func(d, axis=0)
+            ix += 1
+        for s_ix, s in enumerate(list(samples)):
+            c.calls[str(s)] = gt_matrix[:,s_ix]
+        return c
+
     
     def clusterCalls(c,gamma=0.9,cophenetic_cutoff=0.85):
         """find CNVRs in calls"""
