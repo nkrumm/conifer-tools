@@ -322,8 +322,8 @@ class ConiferPlotter():
         plt.ylabel("SVD-ZRPKM Values")
         
         if "cnvrID" in call:
-            plt.title("%s; %s: %s - %s; cnvr: %d; frequency: %d" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True), call["cnvrID"], call["cnvr_frequency"]))
-            outfile = "%d_%s_%d_%d_%s.png" % (call["cnvrID"], self._chrInt2Str(chromosome), start, stop, sampleID)
+            plt.title("%s; %s: %s - %s; cnvr: %s; frequency: %d" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True), str(call["cnvrID"]), call["cnvr_frequency"]))
+            outfile = "%s_%s_%d_%d_%s.png" % (str(call["cnvrID"]), self._chrInt2Str(chromosome), start, stop, sampleID)
         else:
             plt.title("%s; %s: %s - %s" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True)))
             outfile = "%s_%d_%d_%s.png" % (self._chrInt2Str(chromosome), start, stop, sampleID)
