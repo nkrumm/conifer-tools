@@ -283,6 +283,11 @@ class ConiferPlotter():
                             "name": track.name,
                             "position": pos})
 
+    def remove_track(self, name):
+        for i, track in enumerate(self.tracks):
+            if track["name"] == name:
+                self.tracks.pop(i)
+
     def basicPlot(self, call, window=50, outdir=None):
         chromosome = int(call["chromosome"])
         start = int(call["start"])
