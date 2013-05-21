@@ -167,8 +167,8 @@ class CallTable(object):
             gt_matrix[ix,:] = func(d, axis=0)
             ix += 1
         for s_ix, s in enumerate(list(samples)):
-            c.calls[str(s)] = gt_matrix[:,s_ix]
-        return c
+            self.calls[str(s)] = gt_matrix[:,s_ix]
+        return CallTable(self.calls)
 
     
     def clusterCalls(c,gamma=0.9,cophenetic_cutoff=0.85):
