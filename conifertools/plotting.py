@@ -348,48 +348,47 @@ class ConiferPlotter():
 def QC_Chromosome_Plot(calls, title=None, outfile=None):
     x = np.array(calls.calls["num_probes"].values)
     y = np.array(calls.calls["median_svdzrpkm"].values)
-    
+
     fig = plt.figure(1, figsize=(9,9))
-    
+
     from mpl_toolkits.axes_grid import make_axes_locatable
-    
+
     axScatter = plt.subplot(111)
     divider = make_axes_locatable(axScatter)
-    
+
     # create a new axes with a height of 1.2 inch above the axScatter
     axHistx = divider.new_vertical(1.2, pad=0.1, sharex=axScatter)
-    
+
     # create a new axes with a width of 1.2 inch on the right side of the
     # axScatter
     axHisty = divider.new_horizontal(1.2, pad=0.1, sharey=axScatter)
-    
+
     fig.add_axes(axHistx)
     fig.add_axes(axHisty)
-    
+
     # make some labels invisible
     plt.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(),
              visible=False)
-    
+
     # the scatter plot:
     #axScatter.scatter(x[x<0], y[x<0], lw=0, alpha=0.3, color="r")
     axScatter.scatter(x[x>=0], y[x>=0], lw=0, alpha=0.3, color="b")
     #axScatter.set_aspect(1.)
     axScatter.set_xscale("symlog")
     axHistx.set_xscale("symlog")
-    
+
     axScatter.set_xlabel("Size of call (# of probes)")
     axScatter.set_ylabel("Signal Strength (Median SVD-ZRPKM)")
-                         
+
     axHistx.hist(x, bins=np.arange(0,np.max(x)), histtype="stepfilled", lw=0,align='left')
     axHisty.hist(y, bins=200, orientation='horizontal', histtype="stepfilled", lw=0)
-    
+
     for tl in axHistx.get_xticklabels():
         tl.set_visible(False)
-    
+
     axHisty.set_xticklabels(["%d" % i for i in axHisty.get_xticks()], rotation=-90)
     if title is not None:
         axHistx.set_title(title)
-    
+
     if outfile is not None:
         plt.savefig(outfile)
-
