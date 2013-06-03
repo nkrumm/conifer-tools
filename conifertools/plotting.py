@@ -392,3 +392,20 @@ def QC_Chromosome_Plot(calls, title=None, outfile=None):
 
     if outfile is not None:
         plt.savefig(outfile)
+
+def QC_SampleSD_Plot(sd_values, title=None, outfile=None, logscale=False, **kwargs):
+    fig, ax = plt.subplots(figsize=(9,9))
+    if "bins" not in kwargs:
+        kwargs["bins"] = len(sd_values) / 100
+    if "histtype" not in kwargs:
+        kwargs["histtype"] = "stepfilled"    
+    if "lw" not in kwargs:
+        kwargs["lw"] = 0
+    ax.hist(sd_values, **kwargs)
+    if logscale:
+        ax.set_yscale("symlog")
+    if title is not None:
+        plt.title(title)
+    if outfile is not None:
+        plt.savefig(outfile)
+    return fig, ax
