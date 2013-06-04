@@ -400,6 +400,12 @@ class ConiferPipeline:
     def getConiferData(self, sample, chrom):
         return self.r.getChromosomeBySample(sample,chrom)
     
+    def getSampleSD(self, sample):
+        sample_data = []
+        for c in xrange(1,24):
+            sample_data.extend(self.getConiferData(sample, c).rpkm)
+        return np.std(np.array(sample_data))
+
     def preprocess(self, data, min_val=-3,max_val=3):
         data.rpkm = np.clip(data.rpkm,min_val,max_val)
         return data
