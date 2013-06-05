@@ -51,14 +51,16 @@ class ConiferPlotTrack(object):
                       "solid_capstyle": lambda row: 'butt'}
 
         self.collapsed_linespacing = collapsed_linespacing
+
         print args
+        
         for key in args:
             if key in ["color", "linewidth", "linestyle", "alpha"]:
                 if isalambda(args[key]):
                     self.style[key] = lambda row: args[key](row)
                     print "adding lambda for key %s" % key
                 else:
-                    self.style[key] = lambda row: args[key]
+                    self.style[key] = lambda row: eval("args[key]")
                     print "adding non-lambda for key %s" % key
         
         print self.style
