@@ -50,9 +50,13 @@ class ConiferPlotTrack(object):
             if key in ["color", "linewidth", "linestyle","alpha"]:
                 if isalambda(args[key]):
                     self.style[key] = lambda row: args[key](row)
+                    print "adding lambda for key %s" % key
                 else:
                     self.style[key] = lambda row: args[key]
-
+                    print "adding non-lambda for key %s" % key
+        
+        print self.style
+        
         self.fields = ["chromosome", "start", "stop"]
         if data_field is not None:
             self.fields.extend(data_field)
@@ -124,7 +128,15 @@ class ConiferPlotTrack(object):
                 if start == stop:
                     continue
                 curr_pos -= self.collapsed_linespacing
-                vals = {k: v(row) for k, v in self.style.iteritems()} # all of the style are lambda functions and here we evalueate them given the current data (row)
+                vals = {}
+                for k,v in self.style.iteritems():
+                    print "key: ", k
+                    print "val:", v
+                    print "evaluated val:", v(row)
+
+                    vals[k] = v(row)
+                print vals
+                #vals = {k: v(row) for k, v in self.style.iteritems()} # all of the style are lambda functions and here we evalueate them given the current data (row)
                 _ = ax.add_line(matplotlib.lines.Line2D([start,stop],[curr_pos,curr_pos],**vals))
 
 
