@@ -34,6 +34,9 @@ def _contiguous_regions(condition):
     idx.shape = (-1,2)
     return idx
 
+def isalambda(v):
+    return isinstance(v, type(lambda: None)) and v.__name__ == '<lambda>'
+
 class ConiferPlotTrack(object):
     def __init__(self, plotter, data_in, name, collapse=True, position='auto', data_field=None, collapsed_linespacing=0.125, **args):
         self.name = name
@@ -45,7 +48,10 @@ class ConiferPlotTrack(object):
         self.collapsed_linespacing = collapsed_linespacing
         for key in args:
             if key in ["color", "linewidth", "linestyle","alpha"]:
-                self.style[key] = args[key]
+                if isalambda(args[key]):
+                    self.style[key] = lambda row: args[key](row)
+                else:
+                    self.style[key] = lambda row: args[key]
 
         self.fields = ["chromosome", "start", "stop"]
         if data_field is not None:
@@ -118,7 +124,8 @@ class ConiferPlotTrack(object):
                 if start == stop:
                     continue
                 curr_pos -= self.collapsed_linespacing
-                _ = ax.add_line(matplotlib.lines.Line2D([start,stop],[curr_pos,curr_pos],**self.style))
+                vals = {k: v(row) for k, v in self.style} # all of the style are lambda functions and here we evalueate them given the current data (row)
+                _ = ax.add_line(matplotlib.lines.Line2D([start,stop],[curr_pos,curr_pos],**vals))
 
 
 class ConiferPlotter():
