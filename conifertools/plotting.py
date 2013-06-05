@@ -44,7 +44,7 @@ class ConiferPlotTrack(object):
         self.position = position
         self.collapsed = collapse
         # Default style
-        self.style = {"color":'r',"linewidth":5, "linestyle":'-',"alpha":0.5,"solid_capstyle":'butt'}
+        self.style = {"color":lambda row: 'r',"linewidth":lambda row: 5, "linestyle": lambda row: '-',"alpha":lambda row: 0.5,"solid_capstyle":lambda row: 'butt'}
         self.collapsed_linespacing = collapsed_linespacing
         for key in args:
             if key in ["color", "linewidth", "linestyle","alpha"]:
