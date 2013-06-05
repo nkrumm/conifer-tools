@@ -124,7 +124,7 @@ class ConiferPlotTrack(object):
                 if start == stop:
                     continue
                 curr_pos -= self.collapsed_linespacing
-                vals = {k: v(row) for k, v in self.style} # all of the style are lambda functions and here we evalueate them given the current data (row)
+                vals = {k: v(row) for k, v in self.style.iteritems()} # all of the style are lambda functions and here we evalueate them given the current data (row)
                 _ = ax.add_line(matplotlib.lines.Line2D([start,stop],[curr_pos,curr_pos],**vals))
 
 
