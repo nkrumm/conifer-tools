@@ -132,9 +132,13 @@ class ConiferPlotTrack(object):
                 for k,v in self.style.iteritems():
                     print "key: ", k
                     print "val:", v
-                    print "evaluated val:", v(row)
+                    try:
+                        print "evaluated val:", v(row)
+                        vals[k] = v(row)
+                    except TypeError:
+                        print "non-evaluated val:", v
+                        vals[k] = v
 
-                    vals[k] = v(row)
                 print vals
                 #vals = {k: v(row) for k, v in self.style.iteritems()} # all of the style are lambda functions and here we evalueate them given the current data (row)
                 _ = ax.add_line(matplotlib.lines.Line2D([start,stop],[curr_pos,curr_pos],**vals))
