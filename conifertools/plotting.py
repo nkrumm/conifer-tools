@@ -129,12 +129,13 @@ class ConiferPlotTrack(object):
                 curr_pos -= self.collapsed_linespacing
                 vals = {}
                 for k,v in self.style.iteritems():
-                    print "key: ", k
-                    print "val:", v
+
                     if isalambda(v):
                         vals[k] = v(row)
                     else:
                         vals[k] = v
+                    print "key: ", k
+                    print "val:", v
 
                 print vals
                 #vals = {k: v(row) for k, v in self.style.iteritems()} # all of the style are lambda functions and here we evalueate them given the current data (row)
