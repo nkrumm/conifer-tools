@@ -44,10 +44,16 @@ class ConiferPlotTrack(object):
         self.position = position
         self.collapsed = collapse
         # Default style
-        self.style = {"color":lambda row: 'r',"linewidth":lambda row: 5, "linestyle": lambda row: '-',"alpha":lambda row: 0.5,"solid_capstyle":lambda row: 'butt'}
+        self.style = {"color": lambda row: 'r',
+                      "linewidth": lambda row: 5,
+                      "linestyle": lambda row: '-',
+                      "alpha": lambda row: 0.5,
+                      "solid_capstyle": lambda row: 'butt'}
+
         self.collapsed_linespacing = collapsed_linespacing
+        print args
         for key in args:
-            if key in ["color", "linewidth", "linestyle","alpha"]:
+            if key in ["color", "linewidth", "linestyle", "alpha"]:
                 if isalambda(args[key]):
                     self.style[key] = lambda row: args[key](row)
                     print "adding lambda for key %s" % key
