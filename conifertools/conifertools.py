@@ -195,6 +195,9 @@ class CallTable(object):
         self.calls.to_csv(f,**kwargs)
 
 
+class CallFilterTemplateException(Exception):
+    pass
+
 class CallFilterTemplate():
     KNOWN_TYPES = ["overlap", "count", "contains", "name"]
 
@@ -205,8 +208,7 @@ class CallFilterTemplate():
             self.func = func
             self.name = name
         else:
-            print "filter type %s not yet implemented" % filter_type
-            return None
+            raise CallFilterTemplateException("filter type %s not yet implemented" % filter_type)
 
         try:
             bedfile = pandas.read_csv(filename,sep="\t",index_col=False,header=None)
@@ -215,9 +217,10 @@ class CallFilterTemplate():
             elif len(bedfile.columns) == 4:
                 bedfile.columns = ["chr","start","stop","name"]
             else:
-                raise
+                raise CallFilterTemplateException("Incorrectly formed input file for CallFilterTemplate."
+                                                  " Check the # of columns? Should be tab-delimited chr, start, stop, [name]")
         except:
-            print "Exception: Could not read bed file or file has wrong number of columns: ", filename
+            raise CallFilterTemplateException("Could not read bed file or file has wrong number of columns: %s" % filename)
 
         bedfile = bedfile.sort(["chr","start","stop"])
         bedfile_chrs = set(bedfile["chr"].values)
@@ -250,9 +253,9 @@ class CallFilterTemplate():
                 probe_array["name"] = None
                 for ix, p in probe_array[probe_array.feature].iterrows():
                     f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
-                    v = bed_array[f]["name"].values
+                    v = np.unique(bed_array[f]["name"].values)
                     if len(v) > 1:
-                        probe_array["name"].ix[ix] = np.unique(v)
+                        probe_array["name"].ix[ix] = v
                     else:
                         probe_array["name"].ix[ix] = v[0]
 
