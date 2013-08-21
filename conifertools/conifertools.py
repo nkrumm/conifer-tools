@@ -254,10 +254,6 @@ class CallFilterTemplate():
                 for ix, p in probe_array[probe_array.feature].iterrows():
                     f = (bed_array.start <= p["stop"]) & (bed_array.stop >= p["start"])
                     probe_array["name"].ix[ix] = np.unique(bed_array[f]["name"].values)
-                    # if len(v) > 1:
-                    #      = v
-                    # else:
-                    #     probe_array["name"].ix[ix] = v[0]
 
             self._filter = self._filter.append(probe_array, ignore_index=True)
 
@@ -278,7 +274,6 @@ class CallFilterTemplate():
     def _name(self, row):
         items = [item for sublist in self._filter[self._get_filter_rows(row)]["name"].dropna().values for item in sublist if item != None]
         out_names = set(items) - set([None])
-        print out_names
         return ", ".join(list(out_names))
 
     def _genColumnName(self, name, tbl):
