@@ -240,7 +240,7 @@ class CallTable(object):
             default_column_lambdas[col] = lam
         
         default_track_args = {
-            "itemRGB": "On",
+            "itemRgb": "On",
             "name": filename,
         }
         for key, val in track_args.iteritems():
