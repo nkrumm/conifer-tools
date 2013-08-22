@@ -108,6 +108,14 @@ class CallTable(object):
         
         self.calls = self.calls.append(pandas.Series(a),ignore_index=True)
     
+    def _chrXY(self, chromosome):
+        if chromosome == 23:
+            return "X"
+        elif chromosome == 24:
+            return "Y"
+        else:
+            return str(chromosome)
+    
     def addCall(self, a):
         if isinstance(a,list):
             for i in a:
@@ -193,6 +201,70 @@ class CallTable(object):
             kwargs["sep"] = "\t"
         
         self.calls.to_csv(f,**kwargs)
+
+    def to_bed(self, filename, column_lambdas={}, track_args={}):
+        """
+        Write a calltable to a bed file. Optionally provide:
+
+            column_lambdas: a dictionary of columm-lambda functions 
+                        which can be used to define custom bed fields, such 
+                        as the scores, color, strand or thickStart/thickEnd.
+
+            track_args: a dictionary of key-value pairs to be written 
+                        in the "track" line of a bed file.
+
+            default bed fields are:
+                chromosome = row["chromosome] # converted to chrX/chrY
+                start = row["start]
+                stop = row["stop]
+                name = lambda row: "%s_%s" % (row["sampleID"], row["cohort"])
+                score = 0
+                strand = .
+                thickStart = row["start"]
+                thickEnd = row["stop]
+                color = lambda row: "255,0,0" if row["state"] == -1 else "0,0,255"
+
+        """
+        default_column_lambdas = {
+            "chromosome": lambda row: self._chrXY(row["chromosome"]),
+            "start": lambda row: row["start"],
+            "stop": lambda row: row["stop"],
+            "name": lambda row: "%s_%s" % (row["sampleID"], row["cohort"]),
+            "score": lambda row: "0",
+            "strand": lambda row: ".",
+            "thickStart": lambda row: row["start"],
+            "thickEnd": lambda row: row["stop"],
+            "color": lambda row: "255,0,0" if row["state"] < 0 else "0,0,255"
+        }
+        for col, lam in column_lambdas.iteritems():
+            default_column_lambdas[col] = lam
+        
+        default_track_args = {
+            "itemRGB": "On",
+            "name": filename,
+        }
+        for key, val in track_args.iteritems():
+            default_track_args[key] = val
+
+        with open(filename, 'w') as bed_file:
+            track_string = "track "
+            track_string += " ".join(['%s="%s"' % (k,v) for k,v in default_track_args.iteritems()])
+            track_string += "\n"
+            bed_file.write(track_string)
+            for ix, row in self.calls.iterrows():
+                line = "chr{chromosome}\t{start}\t{stop}\t{name}\t{score}\t{strand}\t{thickStart}\t{thickEnd}\t{color}\n"\
+                    .format(
+                        chromosome=default_column_lambdas["chromosome"](row),
+                        start=default_column_lambdas["start"](row),
+                        stop=default_column_lambdas["stop"](row),
+                        name=default_column_lambdas["name"](row),
+                        score=default_column_lambdas["score"](row),
+                        strand=default_column_lambdas["strand"](row),
+                        thickStart=default_column_lambdas["thickStart"](row),
+                        thickEnd=default_column_lambdas["thickEnd"](row),
+                        color=default_column_lambdas["color"](row)
+                        )
+                bed_file.write(line)
 
 
 class CallFilterTemplateException(Exception):
