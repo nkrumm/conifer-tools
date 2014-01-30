@@ -9,10 +9,9 @@ parser.add_argument("--infile", "-i", action="store", required=True)
 parser.add_argument("--outfile", "-o", action="store", required=True)
 parser.add_argument("--plotfile", action="store", required=False, default=None)
 parser.add_argument("--verbose", action="store_true", required=False, default=False)
-args = parser.parse_args(["--infile","/net/eichler/vol8/home/nkrumm/EXOMES/ESP2000/SVD/ESP.BROAD.SVD70.QC.SampleQC.hdf5", "--outfile","test.SVD70sd.txt", "--plotfile","test.SVD70.png", "--verbose"])
 
 p = ConiferPipeline(args.infile)
-#n_probes = sum([len(p.getProbesByChrom(x)) for x in range(1,24)])
+
 out_sd_values = []
 with open(args.outfile, 'w') as out_file:
     for sampleID in p.samples:
