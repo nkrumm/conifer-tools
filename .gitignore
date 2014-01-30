@@ -36,3 +36,8 @@ nosetests.xml
 .pydevproject
 conifer-tools.sublime-project
 conifer-tools.sublime-workspace
+conifertools/__init__.pyc
+conifertools/conifertools.pyc
+conifertools/hcluster.pyc
+conifertools/plotting.pyc
+conifertools/rpkm.pyc
