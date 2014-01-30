@@ -13,10 +13,9 @@ def get_data(conifer_file, samples = None, chromosomes=None):
 	if chromosomes == None:
 		chromosomes = range(1,24)
 	
-	for s in samples:
-		for chrom in chromosomes:
-			data = p.getConiferData(s,chrom)
-			yield {"data":data,"sample":s,"chrom":chrom}
+	for s in samples:		
+		data = p.getConiferData(s,chromosomes)
+		yield {"data":data,"sample":s,"chrom":chromosomes}
 
 def mapinit_func():
 	global p
@@ -27,14 +26,15 @@ def map_func(x):
 	attempts = 0
 	while attempts < (args.n_retry+1):
 		try:
-			print "[STATUS] now running %s:chr%s" % (x["sample"], x["chrom"])
-			calls = p.segment(data,x["sample"],x["chrom"])
-			print "[STATUS] finished %s:chr%s" % (x["sample"], x["chrom"])
+			
+			print "[STATUS] now running %s" % x["sample"]
+			calls = p.segment(data,x["sample"])
+			print "[STATUS] finished %s" % x["sample"]
 			return calls
 		except:
-			print "[WARNING] %s:chr%d could not segment... Retrying" % (x["sample"], x["chrom"])
+			print "[WARNING] %s could not segment... Retrying" % x["sample"]
 			attempts +=1
-	print "[ERROR] %s:chr%d failed to segment after %d tries" % (x["sample"], x["chrom"], (args.n_retry+1))
+	print "[ERROR] %s failed to segment after %d tries" % (x["sample"], (args.n_retry+1))
 	return 0
 
 

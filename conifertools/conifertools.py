@@ -471,7 +471,6 @@ class ConiferPipeline:
 
     def getConiferData(self, sample, chromosomes):
         if self.is_sequence(chromosomes):
-
             out_data = self.r.getChromosomeBySample(sample,chromosomes[0])
             for chrom in chromosomes[1:]:
                 d = self.r.getChromosomeBySample(sample,chrom)
@@ -506,10 +505,10 @@ class ConiferPipeline:
         else:
             return [(b[0],b[0]) if (b[1]-b[0])==1 else tuple(b) for b in bkpts.reshape(len(bkpts)/2,2)]
     
-    def runCGHCall(self, data,sampleID):
+    def runCGHCall(self, data, sampleID):
         if isinstance(data,rpkm.rpkm_data):
             od = rlc.OrdDict([("NAME", robjects.vectors.IntVector(data.exons["probeID"])), \
-                  ("CHROMOSOME",  robjects.vectors.IntVector(np.repeat(data.contig,len(data.exons)))), \
+                  ("CHROMOSOME",  robjects.vectors.IntVector(data.exons["chrom"])), \
                   ("START_POS",   robjects.vectors.IntVector(data.exons["start"])), \
                   ("STOP_POS",    robjects.vectors.IntVector(data.exons["stop"])),
                   (str(sampleID), robjects.vectors.FloatVector(data.rpkm))])
@@ -517,21 +516,21 @@ class ConiferPipeline:
             print "unknown data type input!"
             return 0
         
-        try:
-            t  = cghbase.make_cghRaw(robjects.DataFrame(od))
-            t2 = cghcall.preprocess(t)
-            t3 = cghcall.segmentData(t2,**{'alpha':0.02, 'undo.splits': "sdundo", 'undo.SD':2})
-            t4 = cghcall.postsegnormalize(t3)
-            t5 = cghcall.CGHcall(t4)
-            try:
-                t6 = cghcall.ExpandCGHcall(t5,t4)
-            except:
-                self.log("stderr", "%(sampleID)s: Failed to ExpandCGHcall() on chromosome %(chrom)d\n" % {"sampleID":sampleID,"chrom":data["CHROMOSOME"][0]})
-                print "%(sampleID)s: Failed to ExpandCGHcall() on chromosome %(chrom)d\n" % {"sampleID":sampleID,"chrom":data["CHROMOSOME"][0]}
-                raise
-        except:
-            #print "[ERROR]: Failed on R code for sample %s" % sampleID
-            raise
+        #try:
+        t  = cghbase.make_cghRaw(robjects.DataFrame(od))
+        t2 = cghcall.preprocess(t)
+        t3 = cghcall.segmentData(t2,**{'alpha':0.02, 'undo.splits': "sdundo", 'undo.SD':2})
+        t4 = cghcall.postsegnormalize(t3)
+        t5 = cghcall.CGHcall(t4)
+        #        try:
+        t6 = cghcall.ExpandCGHcall(t5,t4)
+        #     except:
+        #         self.log("stderr", "%(sampleID)s: Failed to ExpandCGHcall() on chromosome %(chrom)d\n" % {"sampleID":sampleID,"chrom":data["CHROMOSOME"][0]})
+        #         print "%(sampleID)s: Failed to ExpandCGHcall() on chromosome %(chrom)d\n" % {"sampleID":sampleID,"chrom":data["CHROMOSOME"][0]}
+        #         raise
+        # except:
+        #     #print "[ERROR]: Failed on R code for sample %s" % sampleID
+        #     raise
         
         out=np.vstack([np.array(cghbase.chromosomes(t6)),
                        np.array(cghbase.bpstart(t6)),
@@ -547,7 +546,7 @@ class ConiferPipeline:
         out = pandas.DataFrame(out,columns=["chromosome","start","stop","svdzrpkm","call","p_dloss","p_loss","p_norm","p_gain","p_amp"])
         return out
     
-    def segment(self, data, sample,chromosome):
+    def segment(self, data, sample):
         # convert "gain" and "amplification" to "gain" only
         callint2colname = {-2: "p_dloss", -1: "p_loss", 1: "p_gain", 2:"p_amp"}
         # fire up R, run CGHCall
@@ -571,8 +570,15 @@ class ConiferPipeline:
                 svdzrpkm_vals = out.ix[call[0]:call[1]-1]["svdzrpkm"]
                 start_bp = out.ix[call[0]]["start"]
                 stop_bp = out.ix[call[1]-1]["stop"]
-                start_exon= np.searchsorted(out["start"].values, start_bp)
-                stop_exon = np.searchsorted(out["stop"].values, stop_bp)
+                chromosome_vals = np.unique(out.ix[call[0]:call[1]-1]["chromosome"])
+                if len(chromosome_vals) == 1:
+                    chromosome = chromosome_vals[0]
+                else:
+                    print "[ERROR] multiple chromosomes in this call!, Ignoring"
+                    print chromosome_vals, start_bp, stop_bp
+                    continue
+                start_exon= np.where(out[out["chromosome"]==chromosome]["start"]>=start_bp)[0][0]
+                stop_exon = np.where(out[out["chromosome"]==chromosome]["start"]<=stop_bp)[0][-1]
                 #np.median(prob_vals), np.median(svdzrpkm_vals), np.std(svdzrpkm_vals))
 
                 print start_exon, stop_exon
@@ -607,24 +613,14 @@ class ConiferPipeline:
 
         calls = CallTable()
         for s in samples:
-            sample_calls = CallTable()
-            if self.log_level >=1:
-                print s, 
-            for chrom in chromosomes:
-                if self.log_level >=1:
-                    print chrom,
-                data = self.preprocess(self.getConiferData(s,chrom))
-                try:
-                    chrom_calls = self.segment(data,s,chrom)
-                except:
-                    #skip this chromosome
-                    print "Failed on chromosome, ", chrom
-                    continue
-                sample_calls.appendCalls(chrom_calls)
+            data = self.preprocess(self.getConiferData(s,chromosomes))
+            try:
+                sample_calls = self.segment(data,s)
+            except:
+                print "Failed on samples, ", s
+                continue
             if len(sample_calls.calls) > 0:
                 calls.appendCalls(sample_calls)
-                if self.log_level >=1:
-                    print "\n",  # newline needed
         return calls
 
     def makeCallsMPI(self, outfile=None, chromosomes=None,samples=None,n_cpus=10, verbose=False, n_retry=0):
