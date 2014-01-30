@@ -469,8 +469,18 @@ class ConiferPipeline:
             chrom = int(chrom.lstrip("chr"))
         return pandas.DataFrame(self.r.h5file.root.probes._f_getChild("probes_chr%d" % chrom).read())
 
-    def getConiferData(self, sample, chrom):
-        return self.r.getChromosomeBySample(sample,chrom)
+    def getConiferData(self, sample, chromosomes):
+        if self.is_sequence(chromosomes):
+
+            out_data = self.r.getChromosomeBySample(sample,chromosomes[0])
+            for chrom in chromosomes[1:]:
+                d = self.r.getChromosomeBySample(sample,chrom)
+                out_data.rpkm = np.hstack([out_data.rpkm, d.rpkm])
+                out_data.exons = np.hstack([out_data.exons, d.exons])
+            out_data.contig = chromosomes
+            return out_data
+        else:
+            return self.r.getChromosomeBySample(sample,chromosomes)
     
     def getSampleSD(self, sample):
         sample_data = []
