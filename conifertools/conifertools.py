@@ -571,9 +571,10 @@ class ConiferPipeline:
         arg_string = " ".join(["--%s %s" % (k,v) for k,v in arg_dict.items()])
         
         remote_command = "%s %s/call.mpi.py" % (sys.executable, os.path.dirname(os.path.realpath(__file__)))
-        modules = ["modules", "modules-init", "modules-gs", "modules-eichler", "zlib/1.2.5", "hdf5/1.8.8", "bedtools/latest", "openmpi/1.5.3", "R/latest", "python/2.7.2", "numpy/1.6.1", "scipy/0.10.0", "lzo/2.06", "pytables/2.3.1_hdf5-1.8.8", "MySQLdb/1.2.3"]
+        modules = ["modules", "modules-init", "modules-gs", "modules-eichler", "zlib/1.2.5", "hdf5/1.8.8", "bedtools/latest", "openmpi/1.5.3", "R/2.15.1", "python/2.7.2", "numpy/1.6.1", "scipy/0.10.0", "lzo/2.06", "pytables/2.3.1_hdf5-1.8.8", "MySQLdb/1.2.3"]
         specs = "-S /bin/bash -cwd -j y -l h_vmem=2G -pe orte %d" % (n_cpus)
         cmd = remote_command + " " + arg_string
+        print "modules: %s" % ", ".join(modules)
         print "makeCallsMPI qsub command:" , cmd
         mpi.submit_job(cmd,name="makeCallsMPI", modules = modules, native_specification=specs, mpirun=True, wait=True)
         
