@@ -544,7 +544,7 @@ class ConiferPipeline:
         try:
             out = self.runCGHCall(data, sample)
         except:
-            print "[ERROR] in runCGHCall() Method, %d, %s" % (len(data), sample)
+            print "[ERROR] in runCGHCall() Method, %d, %s" % (len(data.rpkm), sample)
             pass
         
         # post process 
@@ -561,9 +561,11 @@ class ConiferPipeline:
                 svdzrpkm_vals = out.ix[call[0]:call[1]-1]["svdzrpkm"]
                 start_bp = out.ix[call[0]]["start"]
                 stop_bp = out.ix[call[1]-1]["stop"]
-                start_exon= np.searchsorted(out["start"], start_bp)
-                stop_exon = np.searchsorted(out["stop"], stop_bp)
-                #np.median(prob_vals), np.median(svdzrpkm_vals), np.std(svdzrpkm_vals))                
+                start_exon= np.searchsorted(out["start"].values, start_bp)
+                stop_exon = np.searchsorted(out["stop"].values, stop_bp)
+                #np.median(prob_vals), np.median(svdzrpkm_vals), np.std(svdzrpkm_vals))
+
+                print start_exon, stop_exon
                 t = {"sampleID": sample,\
                      "chromosome":int(chromosome),\
                      "start":int(start_bp),\
