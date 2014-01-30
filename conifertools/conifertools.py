@@ -505,13 +505,24 @@ class ConiferPipeline:
         else:
             return [(b[0],b[0]) if (b[1]-b[0])==1 else tuple(b) for b in bkpts.reshape(len(bkpts)/2,2)]
     
-    def runCGHCall(self, data, sampleID):
+    def runCGHCall(self, data, sampleIDs):
         if isinstance(data,rpkm.rpkm_data):
             od = rlc.OrdDict([("NAME", robjects.vectors.IntVector(data.exons["probeID"])), \
                   ("CHROMOSOME",  robjects.vectors.IntVector(data.exons["chrom"])), \
                   ("START_POS",   robjects.vectors.IntVector(data.exons["start"])), \
                   ("STOP_POS",    robjects.vectors.IntVector(data.exons["stop"])),
-                  (str(sampleID), robjects.vectors.FloatVector(data.rpkm))])
+                  (str(sampleIDs), robjects.vectors.FloatVector(data.rpkm))])
+        elif self.is_sequence(data):
+            data_cols = []
+            for d,s in zip(data,sampleIDs):
+                data_cols.append((str(s), robjects.vectors.FloatVector(d.rpkm)))
+                print s
+
+            od = rlc.OrdDict([("NAME", robjects.vectors.IntVector(d.exons["probeID"])), \
+                  ("CHROMOSOME",  robjects.vectors.IntVector(d.exons["chrom"])), \
+                  ("START_POS",   robjects.vectors.IntVector(d.exons["start"])), \
+                  ("STOP_POS",    robjects.vectors.IntVector(d.exons["stop"])),
+                  ] + data_cols)
         else:
             print "unknown data type input!"
             return 0
@@ -531,19 +542,33 @@ class ConiferPipeline:
         # except:
         #     #print "[ERROR]: Failed on R code for sample %s" % sampleID
         #     raise
-        
-        out=np.vstack([np.array(cghbase.chromosomes(t6)),
-                       np.array(cghbase.bpstart(t6)),
-                       np.array(cghbase.bpend(t6)),
-                       np.array(cghbase.copynumber(t6)).flatten(),
-                       np.array(cghbase.calls(t6)).flatten(),
-                       np.array(cghbase.probdloss(t6), dtype=np.float).flatten(),
-                       np.array(cghbase.probloss(t6), dtype=np.float).flatten(),
-                       np.array(cghbase.probnorm(t6), dtype=np.float).flatten(),
-                       np.array(cghbase.probgain(t6), dtype=np.float).flatten(),
-                       np.array(cghbase.probamp(t6), dtype=np.float).flatten()]).transpose()
-        
-        out = pandas.DataFrame(out,columns=["chromosome","start","stop","svdzrpkm","call","p_dloss","p_loss","p_norm","p_gain","p_amp"])
+        out = {}
+        if self.is_sequence(sampleIDs):
+            for ix, s in enumerate(sampleIDs):
+                sample_out = np.vstack([np.array(cghbase.chromosomes(t6)),
+                           np.array(cghbase.bpstart(t6)),
+                           np.array(cghbase.bpend(t6)),
+                           np.array(cghbase.copynumber(t6))[:,ix].flatten(),
+                           np.array(cghbase.calls(t6))[:,ix].flatten(),
+                           np.array(cghbase.probdloss(t6), dtype=np.float)[:,ix].flatten(),
+                           np.array(cghbase.probloss(t6), dtype=np.float)[:,ix].flatten(),
+                           np.array(cghbase.probnorm(t6), dtype=np.float)[:,ix].flatten(),
+                           np.array(cghbase.probgain(t6), dtype=np.float)[:,ix].flatten(),
+                           np.array(cghbase.probamp(t6), dtype=np.float)[:,ix].flatten()]).transpose()
+                out[s] = pandas.DataFrame(sample_out,columns=["chromosome","start","stop","svdzrpkm","call","p_dloss","p_loss","p_norm","p_gain","p_amp"])
+        else:
+            out=np.vstack([np.array(cghbase.chromosomes(t6)),
+                           np.array(cghbase.bpstart(t6)),
+                           np.array(cghbase.bpend(t6)),
+                           np.array(cghbase.copynumber(t6)).flatten(),
+                           np.array(cghbase.calls(t6)).flatten(),
+                           np.array(cghbase.probdloss(t6), dtype=np.float).flatten(),
+                           np.array(cghbase.probloss(t6), dtype=np.float).flatten(),
+                           np.array(cghbase.probnorm(t6), dtype=np.float).flatten(),
+                           np.array(cghbase.probgain(t6), dtype=np.float).flatten(),
+                           np.array(cghbase.probamp(t6), dtype=np.float).flatten()]).transpose()
+            
+            out[sampleIDs] = pandas.DataFrame(out,columns=["chromosome","start","stop","svdzrpkm","call","p_dloss","p_loss","p_norm","p_gain","p_amp"])
         return out
     
     def segment(self, data, sample):
@@ -551,52 +576,54 @@ class ConiferPipeline:
         callint2colname = {-2: "p_dloss", -1: "p_loss", 1: "p_gain", 2:"p_amp"}
         # fire up R, run CGHCall
         try:
-            out = self.runCGHCall(data, sample)
+            out_dict = self.runCGHCall(data, sample)
         except:
-            print "[ERROR] in runCGHCall() Method, %d, %s" % (len(data.rpkm), sample)
+            print "[ERROR] in runCGHCall() Method: %s" % ", ".join(sample)
             pass
-        
-        # post process 
-        out["call"] = np.sign(out["call"])
-        out["p_gain"] = np.maximum(out["p_gain"], out["p_amp"])
-        out["p_loss"] = np.maximum(out["p_loss"], out["p_dloss"])
-        call_states_present = set(out["call"])-set([0])
-        
+
         c = CallTable()
-        for i in call_states_present:
-            calls = self.findBreakPoints(np.array(1 * (out["call"] == i)))
-            for call in calls:
-                prob_vals = out.ix[call[0]:call[1]-1][callint2colname[i]]
-                svdzrpkm_vals = out.ix[call[0]:call[1]-1]["svdzrpkm"]
-                start_bp = out.ix[call[0]]["start"]
-                stop_bp = out.ix[call[1]-1]["stop"]
-                chromosome_vals = np.unique(out.ix[call[0]:call[1]-1]["chromosome"])
-                if len(chromosome_vals) == 1:
-                    chromosome = chromosome_vals[0]
-                else:
-                    print "[ERROR] multiple chromosomes in this call!, Ignoring"
-                    print chromosome_vals, start_bp, stop_bp
-                    continue
-                start_exon= np.where(out[out["chromosome"]==chromosome]["start"]>=start_bp)[0][0]
-                stop_exon = np.where(out[out["chromosome"]==chromosome]["start"]<=stop_bp)[0][-1]
-                #np.median(prob_vals), np.median(svdzrpkm_vals), np.std(svdzrpkm_vals))
 
-                print start_exon, stop_exon
-                t = {"sampleID": sample,\
-                     "chromosome":int(chromosome),\
-                     "start":int(start_bp),\
-                     "stop":int(stop_bp),\
-                     "state":int(i),\
-                     "start_exon":int(start_exon),\
-                     "stop_exon":int(stop_exon),\
-                     "num_probes":int(stop_exon-start_exon+1),\
-                     "size_bp":int(stop_bp - start_bp),\
-                     "probability": np.median(prob_vals),
-                     "median_svdzrpkm": np.median(svdzrpkm_vals),
-                     "stdev_svdzrpkm":np.std(svdzrpkm_vals)}
+        for sampleID, out in out_dict.iteritems():
+            # post process
+            out["call"] = np.sign(out["call"])
+            out["p_gain"] = np.maximum(out["p_gain"], out["p_amp"])
+            out["p_loss"] = np.maximum(out["p_loss"], out["p_dloss"])
+            call_states_present = set(out["call"]) - set([0])
+        
+            for i in call_states_present:
+                calls = self.findBreakPoints(np.array(1 * (out["call"] == i)))
+                for call in calls:
+                    prob_vals = out.ix[call[0]:call[1]-1][callint2colname[i]]
+                    svdzrpkm_vals = out.ix[call[0]:call[1]-1]["svdzrpkm"]
+                    start_bp = out.ix[call[0]]["start"]
+                    stop_bp = out.ix[call[1]-1]["stop"]
+                    chromosome_vals = np.unique(out.ix[call[0]:call[1]-1]["chromosome"])
+                    if len(chromosome_vals) == 1:
+                        chromosome = chromosome_vals[0]
+                    else:
+                        print "[ERROR] multiple chromosomes in this call!, Ignoring"
+                        print chromosome_vals, start_bp, stop_bp
+                        continue
+                    start_exon= np.where(out[out["chromosome"]==chromosome]["start"]>=start_bp)[0][0]
+                    stop_exon = np.where(out[out["chromosome"]==chromosome]["start"]<=stop_bp)[0][-1]
+                    #np.median(prob_vals), np.median(svdzrpkm_vals), np.std(svdzrpkm_vals))
 
-                
-                c.addCall(t)
+                    print start_exon, stop_exon
+                    t = {"sampleID": sampleID,\
+                         "chromosome":int(chromosome),\
+                         "start":int(start_bp),\
+                         "stop":int(stop_bp),\
+                         "state":int(i),\
+                         "start_exon":int(start_exon),\
+                         "stop_exon":int(stop_exon),\
+                         "num_probes":int(stop_exon-start_exon+1),\
+                         "size_bp":int(stop_bp - start_bp),\
+                         "probability": np.median(prob_vals),
+                         "median_svdzrpkm": np.median(svdzrpkm_vals),
+                         "stdev_svdzrpkm":np.std(svdzrpkm_vals)}
+
+                    
+                    c.addCall(t)
         
         return c
     

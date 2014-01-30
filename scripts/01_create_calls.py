@@ -34,6 +34,6 @@ if __name__ == "__main__":
                            n_retry=args.nretry,
                            verbose=args.verbose)
 
-    print "Done Calling for chromosome(s): %s" % ", ".join(chromosomes)
+    #print "Done Calling for chromosome(s): %s" % ", ".join(chromosomes)
     #print calls.calls.head(100)
     calls.save(args.outfile)
