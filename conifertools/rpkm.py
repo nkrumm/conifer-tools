@@ -1,5 +1,6 @@
 import tables
 import numpy as np
+import numpy.lib.recfunctions as rfn
 
 
 class rpkm_data:
@@ -161,7 +162,9 @@ class rpkm_reader:
         if getexons:
             probe_tbl = self.h5file.root.probes._f_getChild("probes_chr" + str(chromosome))
             d.exons = probe_tbl.read()
+            d.exons = rfn.append_fields(d.exons, "chrom", np.repeat(chromosome,len(d.exons)), usemask=False)
             d.contig = chromosome
+
         return d
 
     def getAllChromosomesBySample(self, sampleID):
