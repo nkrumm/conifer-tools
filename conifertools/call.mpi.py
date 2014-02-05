@@ -39,10 +39,10 @@ def map_func(x):
         print "[STATUS] now running %s" % x["familyID"]
         calls = p.segment(x["data"], x["samples"])
         print "[STATUS] finished %s" % x["familyID"]
-        return calls
- #       except:
- #           print "[WARNING] %s could not segment... Retrying" % x["familyID"]
- #           attempts +=1
+        if calls != 0:
+            return calls
+        attempts += 1
+
     print "[ERROR] %s failed to segment after %d tries" % (x["familyID"], (args.n_retry+1))
     return 0
 
