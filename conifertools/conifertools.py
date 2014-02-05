@@ -641,7 +641,7 @@ class ConiferPipeline:
                 calls.appendCalls(sample_calls)
         return calls
 
-    def makeCallsMPI(self, outfile=None, chromosomes=None,samples=None,n_cpus=10, verbose=False, n_retry=0):
+    def makeCallsMPI(self, outfile=None, chromosomes=None,samples=None, families=None, n_cpus=10, verbose=False, n_retry=0):
         import mpi_submit as mpi
         import tempfile 
         if outfile == None:
@@ -657,6 +657,11 @@ class ConiferPipeline:
                 arg_dict["samples"] = " ".join(samples)
             except TypeError:
                 arg_dict["samples"] = samples
+        if families != None:
+            try:
+                arg_dict["families"] = " ".join(families)
+            except TypeError:
+                arg_dict["families"] = families
         if chromosomes != None:
             try:
                 arg_dict["chromosomes"] = " ".join([str(c) for c in chromosomes])
