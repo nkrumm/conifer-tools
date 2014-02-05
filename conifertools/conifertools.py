@@ -527,21 +527,15 @@ class ConiferPipeline:
             print "unknown data type input!"
             return 0
         
-        #try:
+        
         t  = cghbase.make_cghRaw(robjects.DataFrame(od))
         t2 = cghcall.preprocess(t)
         t3 = cghcall.segmentData(t2,**{'alpha':0.02, 'undo.splits': "sdundo", 'undo.SD':2})
         t4 = cghcall.postsegnormalize(t3)
         t5 = cghcall.CGHcall(t4)
-        #        try:
         t6 = cghcall.ExpandCGHcall(t5,t4)
-        #     except:
-        #         self.log("stderr", "%(sampleID)s: Failed to ExpandCGHcall() on chromosome %(chrom)d\n" % {"sampleID":sampleID,"chrom":data["CHROMOSOME"][0]})
-        #         print "%(sampleID)s: Failed to ExpandCGHcall() on chromosome %(chrom)d\n" % {"sampleID":sampleID,"chrom":data["CHROMOSOME"][0]}
-        #         raise
-        # except:
-        #     #print "[ERROR]: Failed on R code for sample %s" % sampleID
-        #     raise
+    
+        
         out = {}
         if self.is_sequence(sampleIDs):
             for ix, s in enumerate(sampleIDs):
@@ -579,7 +573,7 @@ class ConiferPipeline:
             out_dict = self.runCGHCall(data, sample)
         except:
             print "[ERROR] in runCGHCall() Method: %s" % ", ".join(sample)
-            pass
+            return 0
 
         c = CallTable()
 
@@ -602,13 +596,10 @@ class ConiferPipeline:
                         chromosome = chromosome_vals[0]
                     else:
                         print "[ERROR] multiple chromosomes in this call!, Ignoring"
-                        print chromosome_vals, start_bp, stop_bp
                         continue
                     start_exon= np.where(out[out["chromosome"]==chromosome]["start"]>=start_bp)[0][0]
                     stop_exon = np.where(out[out["chromosome"]==chromosome]["start"]<=stop_bp)[0][-1]
                     #np.median(prob_vals), np.median(svdzrpkm_vals), np.std(svdzrpkm_vals))
-
-                    print start_exon, stop_exon
                     t = {"sampleID": sampleID,\
                          "chromosome":int(chromosome),\
                          "start":int(start_bp),\
