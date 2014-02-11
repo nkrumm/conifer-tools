@@ -304,7 +304,7 @@ class ConiferPlotter():
             if track["name"] == name:
                 self.tracks.pop(i)
 
-    def basicPlot(self, call, window=50, outdir=None):
+    def basicPlot(self, call, window=50, outdir=None, ax=None):
         chromosome = int(call["chromosome"])
         start = int(call["start"])
         stop = int(call["stop"])
@@ -317,13 +317,17 @@ class ConiferPlotter():
         data = self.r.getExonValuesByExons(chromosome,window_start, window_stop,sampleList=[sampleID])
         #_ = data.smooth()
         
-        fig, ax = plt.subplots(figsize=(10,5))
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(10,5))
+            return_axes = False
+        else:
+            return_axes = True
         #ax.plot(data.rpkm, linewidth = 0.3, c='k')
         #ax.plot(data.getSample([sampleID]), linewidth = 1, c='r', label = sampleID)
 
         self._plotRawData(ax, data.getSample([sampleID]),color='r', label=sampleID)
         
-        plt.legend(prop={'size':10},frameon=False)
+        ax.legend(prop={'size':10},frameon=False)
         
         self._plotGenes2(ax,data, fontsize=8, linewidth=6, line_spacing=0.2, levels=3)
         label_interval = (window_stop-window_start)/5
@@ -333,25 +337,32 @@ class ConiferPlotter():
         for t in self.tracks:
             t["track"].plot(ax, position=t["position"], chr=chromosome, data_range=xrange(window_start, window_stop))
 
-        exon_start = np.where(data.exons["start"] == start)[0][0]
-        exon_stop = np.where(data.exons["stop"] == stop)[0][0]
+        try:
+            exon_start = np.where(data.exons["start"] == start)[0][0]
+        except IndexError:
+            exon_start = np.where(data.exons["start"] >= start)[0][0]
+        try:
+            exon_stop = np.where(data.exons["stop"] == stop)[0][0]
+        except IndexError:
+            exon_stop = np.where(data.exons["stop"] >= stop)[0][0]
         _ = ax.add_line(matplotlib.lines.Line2D([exon_start,exon_stop],[2,2],color='k',lw=6,linestyle='-',alpha=1,solid_capstyle='butt'))
         
-        _ = plt.xlim(0,data.shape[1])
-        _ = plt.ylim(-3,3)
-        plt.xlabel("Position")
-        plt.ylabel("SVD-ZRPKM Values")
+        _ = ax.set_xlim(0,data.shape[1])
+        _ = ax.set_ylim(-3,3)
+        ax.set_xlabel("Position")
+        ax.set_ylabel("SVD-ZRPKM Values")
         
         if "cnvrID" in call:
-            plt.title("%s; %s: %s - %s; cnvr: %s; frequency: %d" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True), str(call["cnvrID"]), call["cnvr_frequency"]))
+            ax.set_title("%s; %s: %s - %s; cnvr: %s; frequency: %d" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True), str(call["cnvrID"]), call["cnvr_frequency"]))
             outfile = "%s_%s_%d_%d_%s.png" % (str(call["cnvrID"]), self._chrInt2Str(chromosome), start, stop, sampleID)
         else:
-            plt.title("%s; %s: %s - %s" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True)))
+            ax.set_title("%s; %s: %s - %s" % (sampleID, self._chrInt2Str(chromosome),locale.format("%d",start, grouping=True),locale.format("%d",stop, grouping=True)))
             outfile = "%s_%d_%d_%s.png" % (self._chrInt2Str(chromosome), start, stop, sampleID)
 
 
-        
-        if outfile is not None:
+        if return_axes:
+            return ax
+        elif outfile is not None:
             plt.savefig(outdir + "/" + outfile)
             P.close(fig)
             plt.clf()
