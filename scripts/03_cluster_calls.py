@@ -10,7 +10,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     assert args.gamma <= 1, "Gamma must be <= 1.00"
-    assert max(args.cophenetic_cutoff) <= 1, "All cophenetic cutoffs must be <= 1.00"
+    assert args.cophenetic_cutoff <= 1, "All cophenetic cutoffs must be <= 1.00"
 
     calls = CallTable(args.infile)
 
