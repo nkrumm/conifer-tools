@@ -1,4 +1,5 @@
 from conifertools import ConiferPipeline, CallTable, CallFilterTemplate
+import numpy as np
 import argparse
 
 if __name__ == "__main__":
@@ -38,14 +39,15 @@ if __name__ == "__main__":
                      func=lambda x: x < 0.5)
 
     GeneAnnotation = CallFilterTemplate(p,
-                     "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/refseq.hg19.bed",
+                     "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/hg19.refGene.bed",
                      name="RefSeq",
                      filter_type="name")
 
     def signalFilter(x):
         if x["num_probes"] <= 2:
             return np.abs(x["median_svdzrpkm"]) >= 1.5
-        elif x["num_probes"] <= 5:
+            #return False
+	elif x["num_probes"] <= 5:
             return np.abs(x["median_svdzrpkm"]) >= 1
         else:
             return np.abs(x["median_svdzrpkm"]) >= 0.5
@@ -57,6 +59,7 @@ if __name__ == "__main__":
                  .filter(PPGFilter)\
                  .filter(OtherDupFilter)\
                  .annotate(SDCount)\
-                 .annotate(PPG_probe_count)
+                 .annotate(PPG_probe_count)\
+                 .annotate(GeneAnnotation)
 
     calls.save(args.outfile)
