@@ -304,7 +304,7 @@ class ConiferPlotter():
             if track["name"] == name:
                 self.tracks.pop(i)
 
-    def basicPlot(self, call, window=50, outdir=None, ax=None):
+    def basicPlot(self, call, window=50, outdir=None, ax=None, show_call_line=True):
         chromosome = int(call["chromosome"])
         start = int(call["start"])
         stop = int(call["stop"])
@@ -345,7 +345,8 @@ class ConiferPlotter():
             exon_stop = np.where(data.exons["stop"] == stop)[0][0]
         except IndexError:
             exon_stop = np.where(data.exons["stop"] >= stop)[0][0]
-        _ = ax.add_line(matplotlib.lines.Line2D([exon_start,exon_stop],[2,2],color='k',lw=6,linestyle='-',alpha=1,solid_capstyle='butt'))
+        if show_call_line:
+            _ = ax.add_line(matplotlib.lines.Line2D([exon_start,exon_stop],[2,2],color='k',lw=6,linestyle='-',alpha=1,solid_capstyle='butt'))
         
         _ = ax.set_xlim(0,data.shape[1])
         _ = ax.set_ylim(-3,3)
