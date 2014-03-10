@@ -1,5 +1,6 @@
 from conifertools import ConiferPipeline, CallTable, CallFilterTemplate
 import argparse
+import numpy as np
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -38,7 +39,7 @@ if __name__ == "__main__":
                      func=lambda x: x < 0.5)
 
     GeneAnnotation = CallFilterTemplate(p,
-                     "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/refseq.hg19.bed",
+                     "/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/hg19.refGene.bed",
                      name="RefSeq",
                      filter_type="name")
 

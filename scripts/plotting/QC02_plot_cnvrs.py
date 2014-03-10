@@ -14,7 +14,7 @@ if __name__ == "__main__":
     plotter = ConiferPlotter(args.conifer_file)
 
     SDtrack = ConiferPlotTrack(plotter,
-                               data_in="../../reference_data/hg19genomicSuperDups.bed",
+                               data_in="/net/eichler/vol8/home/nkrumm/REFERENCE_INFO/hg19genomicSuperDups.bed",
                                name="SD",
                                color="y",
                                position=2.5)
