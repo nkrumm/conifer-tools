@@ -2,6 +2,7 @@ from conifertools import ConiferPipeline
 import argparse
 import numpy as np
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--infile", "-i", action="store", required=True)
 parser.add_argument("--outfile", "-o", action="store", required=True)
@@ -24,7 +25,7 @@ with open(args.outfile, 'w') as out_file:
             print sampleID, sample_sd
         out_file.write("%s\t%f\n" % (sampleID, sample_sd))
 
-    if args.plotfile:
-        from conifertools.plotting import QC_SampleSD_Plot
-        kwargs = {"bins": 20, "color":'r'}
-        QC_SampleSD_Plot(out_sd_values, title='SD values', outfile=args.plotfile, logscale=True, **kwargs)
+if args.plotfile:
+	from conifertools.plotting import QC_SampleSD_Plot
+	kwargs = {"bins": 20, "color":'r'}
+	QC_SampleSD_Plot(out_sd_values, title='SD values', outfile=args.plotfile, logscale=True, **kwargs)
