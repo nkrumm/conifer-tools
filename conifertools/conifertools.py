@@ -591,7 +591,7 @@ class ConiferPipeline:
                     svdzrpkm_vals = out.ix[call[0]:call[1]-1]["svdzrpkm"]
                     start_bp = out.ix[call[0]]["start"]
                     stop_bp = out.ix[call[1]-1]["stop"]
-                    chromosome_vals = np.unique(out.ix[call[0]:call[1]-1]["chromosome"])
+                    chromosome_vals = np.unique(out.ix[call[0]:call[1]-1]["chromosome"].values)
                     if len(chromosome_vals) == 1:
                         chromosome = chromosome_vals[0]
                     else:
